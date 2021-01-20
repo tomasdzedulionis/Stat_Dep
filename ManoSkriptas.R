@@ -5,10 +5,11 @@ if(!require("lmtest")) install.packages("lmtest"); library("lmtest")
 if(!require("tseries")) install.packages("tseries"); library("tseries")
 if(!require("dplyr")) install.packages("dplyr"); library("dplyr")
 
+{
 # Pridėtinės vertės
 
 BVP_gamvkTM <- read_excel("BVP darbinis.xlsx", sheet = "TM_ketv", col_names = TRUE)
-BVP_gamvkTM <- rename(BVP_gamvkTM,TM_P80="TM__P80")
+BVP_gamvkTM <- rename(BVP_gamvkTM,TM_N80="TM__N80")
 Date <- BVP_gamvkTM$...1
 
 BVP <- na.omit(BVP_gamvkTM$TM_BVP)
@@ -43,7 +44,7 @@ PVM_J <- ts(rowSums(PVM[,c(50:55)]), start=2010, frequency = 4)
 PVM_K <- ts(rowSums(PVM[,c(56:58)]), start=2010, frequency = 4)
 PVM_L <- ts(PVM$pvm_68, start=2010, frequency = 4)
 PVM_M <- ts(rowSums(PVM[,c(60:66)]), start=2010, frequency = 4)
-PVM_P <- ts(rowSums(PVM[,c(67:72)]), start=2010, frequency = 4)
+PVM_N <- ts(rowSums(PVM[,c(67:72)]), start=2010, frequency = 4)
 PVM_O <- ts(rowSums(PVM[,73]), start=2010, frequency = 4)
 PVM_P <- ts(rowSums(PVM[,74]), start=2010, frequency = 4)
 PVM_Q <- ts(rowSums(PVM[,c(75:77)]), start=2010, frequency = 4)
@@ -77,7 +78,7 @@ Pasl_I <- ts(Paslaugos$pasl_55, start=2007, frequency = 4)
 Pasl_J <- ts(rowSums(Paslaugos[,c(7:12)]), start=2007, frequency = 4)
 Pasl_L <- ts(Paslaugos$pasl_68, start=2007, frequency = 4)
 Pasl_M <- ts(rowSums(Paslaugos[,c(14:19)]), start=2007, frequency = 4)
-Pasl_P <- ts(rowSums(Paslaugos[,c(20:25)]), start=2007, frequency = 4)
+Pasl_N <- ts(rowSums(Paslaugos[,c(20:25)]), start=2007, frequency = 4)
 Pasl_P <- ts(Paslaugos$pasl_85, start=2007, frequency = 4)
 Pasl_Q <- ts(rowSums(Paslaugos[,c(27:29)]), start=2007, frequency = 4)
 Pasl_R <- ts(rowSums(Paslaugos[,c(30:33)]), start=2007, frequency = 4)
@@ -198,6 +199,7 @@ for(i in 1:length(DU)) assign(names(DU)[i], DU[[i]])
 ## Darbo sanaudos
 DS <- read_excel("BVP darbinis.xlsx", sheet = "DS", col_names = TRUE)
 DS <- DS[,-1]
+DS$DS_S_valand <- as.numeric(DS$DS_S_valand)
 DS <- lapply(DS, ts, start = 2010, frequency = 4)
 for(i in 1:length(DS)) assign(names(DS)[i], DS[[i]])
 
@@ -207,8 +209,13 @@ GKI <- GKI[,-1]
 GKI <- lapply(GKI, ts, start = 2006, frequency = 4)
 for(i in 1:length(GKI)) assign(names(GKI)[i], GKI[[i]])
 
+## D21 & D31
+D <- read_excel("BVP darbinis.xlsx", sheet = "D21&D31", col_names = TRUE)
+D <- lapply(D, ts, start = 2005, frequency = 4)
+for(i in 1:length(D)) assign(names(D)[i], D[[i]])
+}
 
-#### 1.A – Žemės ūkis, miškininkystė ir žuvininkystė
+#### 1.A – Žemės ūkis, miškininkystė ir žuvininkystė ####
 A_W <- window(TM_A, start=c(2011,1),end(BVP))
 ZUP_W <- window(zu_prod, start=c(2011,1), end(BVP))
 Uzimt_A_W <- window(uzimt_A, start=c(2011,1), end(BVP))
@@ -236,7 +243,7 @@ graphics.off()
 plot(A_W, lwd=2)
 lines(Af, col="blue")
 
-## 2.B - KASYBA IR KARJERŲ EKSPLOATAVIMAS
+#### 2.B - KASYBA IR KARJERŲ EKSPLOATAVIMAS ####
 B_W <- window(TM_B, start=c(2011,1),end(BVP))
 Pram_B_W <- window(Pram_B, start=c(2011,1), end(BVP))
 PVM_B_W <- window(PVM_B, start=c(2011,1), end(BVP))
@@ -271,7 +278,7 @@ Bf=ts(Bf, start=2011, frequency=4)
 plot(B_W, lwd=2)
 lines(Bf, col="blue")
 
-## 3. C - APDIRBAMOJI GAMYBA
+#### 3. C - APDIRBAMOJI GAMYBA ####
 
 PVM_C_W <- window(PVM_C, start=c(2011,1),end(BVP))
 C_W <- window(TM_C, start=c(2011,1),end(BVP))
@@ -302,7 +309,7 @@ Cf=ts(Cf, start=2011, frequency=4)
 plot(C_W, lwd=2)
 lines(Cf, col="blue")
 
-## 4. D - ELEKTROS, DUJŲ, GARO TIEKIMAS IR ORO KONDICIONAVIMAS
+#### 4. D - ELEKTROS, DUJŲ, GARO TIEKIMAS IR ORO KONDICIONAVIMAS ####
 D_W <- window(TM_D, start=c(2011,1),end(BVP))
 D_W_l3 <- window(stats::lag(TM_D,-3), start=c(2011,1),end(BVP))
 PVM_D_W <- window(PVM_D, start=c(2011,1),end(BVP))
@@ -335,7 +342,7 @@ plot(D_W, lwd=2)
 lines(Df, col="blue")
 
 
-## 5. E - VANDENS TIEKIMAS NUOTEKŲ VALYMAS, ATLIEKŲ TVARKYMAS IR REGENERAVIMAS
+#### 5. E - VANDENS TIEKIMAS NUOTEKŲ VALYMAS, ATLIEKŲ TVARKYMAS IR REGENERAVIMAS ####
 E_W <- window(TM_E, start=c(2011,1),end(BVP))
 Pram_E_W <- window(Pram_E, start=c(2011,1),end(BVP))
 S3_W <- window(S3, start=c(2011,1),end(BVP))
@@ -365,7 +372,7 @@ Ef=ts(Ef, start=2011, frequency=4)
 plot(E_W, lwd=2)
 lines(Ef, col="blue")
 
-## 6. F - STATYBA
+#### 6. F - STATYBA ####
 
 uzimt_F_W <- window(uzimt_F, start=c(2011,1), end(BVP))
 S3_W <- window(S3, start=c(2011,1),end(BVP))
@@ -392,7 +399,7 @@ Ff=ts(Ff, start=2011, frequency=4)
 plot(F_W, lwd=2)
 lines(Ff, col="blue")
 
-## 7. G - DIDMENINĖ IR MAŽMENINĖ PREKYBA; VARIKLINIŲ TRANSPORTO PRIEMONIŲ IR MOTOCIKLŲ REMONTAS
+#### 7. G - DIDMENINĖ IR MAŽMENINĖ PREKYBA; VARIKLINIŲ TRANSPORTO PRIEMONIŲ IR MOTOCIKLŲ REMONTAS ####
 
 G_W <- window(TM_G, start=c(2011,1),end(BVP))
 G_ap_W <- window(G_ap, start=c(2011,1), end(BVP))
@@ -417,7 +424,7 @@ Gf=ts(Gf, start=2011, frequency=4)
 plot(TM_G, lwd=2)
 lines(Gf, col="blue")
 
-## 8. H - TRANSPORTAS IR SAUGOJIMAS
+#### 8. H - TRANSPORTAS IR SAUGOJIMAS ####
 
 H_W <- window(TM_H, start=c(2011,1),end(BVP))
 H_W_l4 <- window(stats::lag(TM_H,-4), start=c(2011,1),end(BVP))
@@ -445,7 +452,7 @@ Hf=ts(Hf, start=2011, frequency=4)
 plot(H_W, lwd=2)
 lines(Hf, col="blue")
 
-## I - APGYVENDINIMO IR MAITINIMO PASLAUGŲ VEIKLA
+#### I - APGYVENDINIMO IR MAITINIMO PASLAUGŲ VEIKLA ####
 
 I_W <- window(TM_I, start=c(2011,1),end(BVP))
 Pasl_I_W <- window(Pasl_I,  start=c(2011,1), end(BVP))
@@ -471,9 +478,8 @@ If=ts(If, start=2011, frequency=4)
 plot(I_W, lwd=2)
 lines(If, col="blue")
 
-## J - INFORMACIJA IR RYŠIAI
+#### J - INFORMACIJA IR RYŠIAI ####
 
-### Pabandyt sutrumpinti nuo  2014m
 
 J_W <- window(TM_J, start=c(2011,1),end(BVP))
 PVM_J_W <- window(PVM_J, start=c(2011,1),end(BVP))
@@ -504,39 +510,6 @@ lines(Jf, col="blue")
 
 #### K - FINANSINĖ IR DRAUDIMO VEIKLA ####
 
-## Paziureti LB duomenu
-
-K_W <- window(TM_K, start=c(2011,1),end(BVP))
-K_W_l1 <- window(stats::lag(TM_K,-1), start=c(2011,1),end(BVP))
-K_W_l4 <- window(stats::lag(TM_K,-4), start=c(2011,1),end(BVP))
-DS_K_W <- window(DS_K, start=c(2011,1),end(BVP))
-DS_K_W_l2 <- window(stats::lag(DS_K,-2), start=c(2011,1),end(BVP))
-DS_K_W_l1 <- window(stats::lag(DS_K,-1), start=c(2011,1),end(BVP))
-PVM_K_W <- window(PVM_K, start=c(2011,1),end(BVP))
-PVM_K_W_l1 <- window(stats::lag(PVM_K,-1), start=c(2011,1),end(BVP))
-DU_K_W <- window(DU_K, start=c(2011,1),end(BVP))
-DU_K_W_l1 <- window(stats::lag(DU_K,-1), start=c(2011,1),end(BVP))
-S3_W <- window(S3, start=c(2011,1),end(BVP))
-S2_W <- window(S2, start=c(2011,1), end(BVP))
-S1_W <- window(S1, start=c(2011,1), end(BVP))
-S4_W <- window(S4, start=c(2011,1), end(BVP))
-im_sk_K_W <- window(im_sk_K, start=c(2011,1), end(BVP))
-im_sk_K_W_l1 <- window(stats::lag(im_sk_K,-1), start=c(2011,1), end(BVP))
-mat_inv_K_W <-  window(mat_inv_K, start=c(2011,1), end(BVP))
-mat_inv_K_W_l1 <- window(stats::lag(mat_inv_K,-1), start=c(2011,1), end(BVP))
-Pasl_K_W <- window(Pasl_K,  start=c(2011,1), end(BVP))
-Pasl_K_W_l1 <- window(stats::lag(Pasl_K,-1), start=c(2011,1),end(BVP))
-salyg_d_sk_K_W <- window(salyg_d_sk_K, start=c(2011,1), end(BVP))
-salyg_d_sk_K_W_l1 <- window(stats::lag(salyg_d_sk_K,-1), start=c(2011,1), end(BVP))
-uzimt_K_W <- window(uzimt_K, start=c(2011,1), end(BVP))
-uzimt_K_W_l1 <- window(stats::lag(uzimt_K,-1), start=c(2011,1), end(BVP))
-TUI_K_W <- window(TUI_K, start=c(2011,1), end(BVP))
-TUI_K_W_l1 <- window(stats::lag(TUI_K,-1), start=c(2011,1), end(BVP))
-TUI_K_W_l2 <- window(stats::lag(TUI_K,-2), start=c(2011,1), end(BVP))
-TUI_K_W_l3 <- window(stats::lag(TUI_K,-3), start=c(2011,1), end(BVP))
-TUI_K_W_l4 <- window(stats::lag(TUI_K,-4), start=c(2011,1), end(BVP))
-
-
 K_W <- window(TM_K, start=c(2011,1),end(BVP))
 PVM_K_W_l1 <- window(stats::lag(PVM_K,-1), start=c(2011,1),end(BVP))
 DU_K_W <- window(DU_K, start=c(2011,1),end(BVP))
@@ -564,64 +537,13 @@ plot(K_W, lwd=2)
 lines(Kf, col="blue")
 
 #### 7. L – Nekilnojamo turto operacijos ####
-## Pabandyt sutrumpint
-{L_W <- window(TM_L, start=c(2011,1),end(BVP))
-L_W_l1 <- window(stats::lag(TM_L,-1), start=c(2011,1),end(BVP))
-L_W_l4 <- window(stats::lag(TM_L,-4), start=c(2011,1),end(BVP))
-DS_L_W <- window(DS_L, start=c(2011,1),end(BVP))
-DS_L_W_l2 <- window(stats::lag(DS_L,-2), start=c(2011,1),end(BVP))
-DS_L_W_l1 <- window(stats::lag(DS_L,-1), start=c(2011,1),end(BVP))
-PVM_L_W <- window(PVM_L, start=c(2011,1),end(BVP))
-PVM_L_W_l1 <- window(stats::lag(PVM_L,-1), start=c(2011,1),end(BVP))
-DU_L_W <- window(DU_L, start=c(2011,1),end(BVP))
-DU_L_W_l1 <- window(stats::lag(DU_L,-1), start=c(2011,1),end(BVP))
-S3_W <- window(S3, start=c(2011,1),end(BVP))
-S2_W <- window(S2, start=c(2011,1), end(BVP))
-S1_W <- window(S1, start=c(2011,1), end(BVP))
-S4_W <- window(S4, start=c(2011,1), end(BVP))
-im_sk_L_W <- window(im_sk_L, start=c(2011,1), end(BVP))
-im_sk_L_W_l1 <- window(stats::lag(im_sk_L,-1), start=c(2011,1), end(BVP))
-mat_inv_L_W <-  window(mat_inv_L, start=c(2011,1), end(BVP))
-mat_inv_L_W_l1 <- window(stats::lag(mat_inv_L,-1), start=c(2011,1), end(BVP))
-Pasl_L_W <- window(Pasl_L,  start=c(2011,1), end(BVP))
-Pasl_L_W_l1 <- window(stats::lag(Pasl_L,-1), start=c(2011,1),end(BVP))
-salyg_d_sk_L_W <- window(salyg_d_sk_L, start=c(2011,1), end(BVP))
-salyg_d_sk_L_W_l1 <- window(stats::lag(salyg_d_sk_L,-1), start=c(2011,1), end(BVP))
-uzimt_L_W <- window(uzimt_L, start=c(2011,1), end(BVP))
-uzimt_L_W_l1 <- window(stats::lag(uzimt_L,-1), start=c(2011,1), end(BVP))
-TUI_L_W <- window(TUI_L, start=c(2011,1), end(BVP))
-TUI_L_W_l1 <- window(stats::lag(TUI_L,-1), start=c(2011,1), end(BVP))
-TUI_L_W_l2 <- window(stats::lag(TUI_L,-2), start=c(2011,1), end(BVP))
-TUI_L_W_l3 <- window(stats::lag(TUI_L,-3), start=c(2011,1), end(BVP))
-TUI_L_W_l4 <- window(stats::lag(TUI_L,-4), start=c(2011,1), end(BVP))
-gyv_pastatai_W <- window(gyv_pastatai, start=c(2011,1), end(BVP))
-gyv_pastatai_W_l1 <- window(stats::lag(gyv_pastatai,-1), start=c(2011,1), end(BVP))
-inz_statiniai_W <- window(inz_statiniai, start=c(2011,1), end(BVP))
-inz_statiniai_W_l1 <- window(stats::lag(inz_statiniai,-1), start=c(2011,1), end(BVP))
-negyv_pastatai_W  <- window(negyv_pastatai, start=c(2011,1), end(BVP))
-negyv_pastatai_W_l1 <- window(stats::lag(negyv_pastatai,-1), start=c(2011,1), end(BVP))
-baigt_gyv_stat_W <- window(baigt_gyv_stat, start=c(2011,1), end(BVP))
-baigt_gyv_stat_W_l3 <- window(stats::lag(baigt_gyv_stat,-3), start=c(2011,1), end(BVP))
-leidimai_W <- window(leidimai, start=c(2011,1), end(BVP))
-leidimai_W_l1 <- window(stats::lag(leidimai,-1), start=c(2011,1), end(BVP))
-pastatai_W <- window(pastatai, start=c(2011,1), end(BVP))
-pastatai_W_l1 <- window(stats::lag(pastatai,-1), start=c(2011,1), end(BVP))
-pastatai_W_l3 <- window(stats::lag(pastatai,-3), start=c(2011,1), end(BVP))
-pastatai_W_l4 <- window(stats::lag(pastatai,-4), start=c(2011,1), end(BVP))
-pastatai_W_l2 <- window(stats::lag(pastatai,-2), start=c(2011,1), end(BVP))
-atlikti_statiniai_W <- window(atlikti_statiniai, start=c(2011,1), end(BVP))
-atlikti_statiniai_W_l4 <- window(stats::lag(atlikti_statiniai,-4), start=c(2011,1), end(BVP))
-visi_statyb_darbai_W <- window(visi_statyb_darbai, start=c(2011,1), end(BVP))
-visi_statyb_darbai_W_l1 <- window(stats::lag(visi_statyb_darbai,-1), start=c(2011,1), end(BVP))
-visi_statyb_darbai_W_l2 <- window(stats::lag(visi_statyb_darbai,-2), start=c(2011,1), end(BVP))
-visi_statyb_darbai_W_l3 <- window(stats::lag(visi_statyb_darbai,-3), start=c(2011,1), end(BVP))
+
+L_W <- window(TM_L, start=c(2011,1),end(BVP))
 visi_statyb_darbai_W_l4 <- window(stats::lag(visi_statyb_darbai,-4), start=c(2011,1), end(BVP))
-leidimai_nauj_gyv_W <- window(leidimai_nauj_gyv, start=c(2011,1), end(BVP))
-leidimai_nauj_gyv_W_l1 <- window(stats::lag(leidimai_nauj_gyv,-1), start=c(2011,1), end(BVP))
+PVM_L_W <- window(PVM_L, start=c(2011,1),end(BVP))
+L_W_l1 <- window(stats::lag(TM_L,-1), start=c(2011,1),end(BVP))
+visi_statyb_darbai_W_l3 <- window(stats::lag(visi_statyb_darbai,-3), start=c(2011,1), end(BVP))
 leidimai_nauj_gyv_W_l2 <- window(stats::lag(leidimai_nauj_gyv,-2), start=c(2011,1), end(BVP))
-leidimai_nauj_gyv_W_l3 <- window(stats::lag(leidimai_nauj_gyv,-3), start=c(2011,1), end(BVP))
-leidimai_nauj_gyv_W_l4 <- window(stats::lag(leidimai_nauj_gyv,-4), start=c(2011,1), end(BVP))
-}
 
 mod_L <- lm( L_W ~ visi_statyb_darbai_W_l4 + PVM_L_W + L_W_l1 + visi_statyb_darbai_W_l3 + leidimai_nauj_gyv_W_l2 )
 summary(mod_L)
@@ -646,46 +568,14 @@ Lf=ts(Lf, start=2011, frequency=4)
 plot(L_W, lwd=2)
 lines(Lf, col="blue")
 
-## M - PROFESINĖ, MOKSLINĖ IR TECHNINĖ VEIKLA
+#### M - PROFESINĖ, MOKSLINĖ IR TECHNINĖ VEIKLA ####
 
-{       M_W <- window(TM_M, start=c(2011,1),end(BVP))
-        M_W_l1 <- window(stats::lag(TM_M,-1), start=c(2011,1),end(BVP))
-        M_W_l2 <- window(stats::lag(TM_M,-2), start=c(2011,1),end(BVP))
-        M_W_l3 <- window(stats::lag(TM_M,-3), start=c(2011,1),end(BVP))
-        M_W_l4 <- window(stats::lag(TM_M,-4), start=c(2011,1),end(BVP))
-        DS_M_W <- window(DS_M, start=c(2011,1),end(BVP))
-        DS_M_W_l2 <- window(stats::lag(DS_M,-2), start=c(2011,1),end(BVP))
-        DS_M_W_l1 <- window(stats::lag(DS_M,-1), start=c(2011,1),end(BVP))
-        PVM_M_W <- window(PVM_M, start=c(2011,1),end(BVP))
-        PVM_M_W_l1 <- window(stats::lag(PVM_M,-1), start=c(2011,1),end(BVP))
-        PVM_M_W_l2 <- window(stats::lag(PVM_M,-2), start=c(2011,1),end(BVP))
-        PVM_M_W_l3 <- window(stats::lag(PVM_M,-3), start=c(2011,1),end(BVP))
-        PVM_M_W_l4 <- window(stats::lag(PVM_M,-4), start=c(2011,1),end(BVP))
-        DU_M_W <- window(DU_M, start=c(2011,1),end(BVP))
-        DU_M_W_l1 <- window(stats::lag(DU_M,-1), start=c(2011,1),end(BVP))
-        S3_W <- window(S3, start=c(2011,1),end(BVP))
-        S2_W <- window(S2, start=c(2011,1), end(BVP))
-        S1_W <- window(S1, start=c(2011,1), end(BVP))
-        S4_W <- window(S4, start=c(2011,1), end(BVP))
-        im_sk_M_W <- window(im_sk_M, start=c(2011,1), end(BVP))
-        im_sk_M_W_l1 <- window(stats::lag(im_sk_M,-1), start=c(2011,1), end(BVP))
-        mat_inv_M_W <-  window(mat_inv_M, start=c(2011,1), end(BVP))
-        mat_inv_M_W_l1 <- window(stats::lag(mat_inv_M,-1), start=c(2011,1), end(BVP))
-        mat_inv_M_W_l2 <- window(stats::lag(mat_inv_M,-2), start=c(2011,1), end(BVP))
-        mat_inv_M_W_l3 <- window(stats::lag(mat_inv_M,-3), start=c(2011,1), end(BVP))
-        mat_inv_M_W_l4 <- window(stats::lag(mat_inv_M,-4), start=c(2011,1), end(BVP))
-        Pasl_M_W <- window(Pasl_M,  start=c(2011,1), end(BVP))
-        Pasl_M_W_l1 <- window(stats::lag(Pasl_M,-1), start=c(2011,1),end(BVP))
-        salyg_d_sk_M_W <- window(salyg_d_sk_M, start=c(2011,1), end(BVP))
-        salyg_d_sk_M_W_l1 <- window(stats::lag(salyg_d_sk_M,-1), start=c(2011,1), end(BVP))
-        uzimt_M_W <- window(uzimt_M, start=c(2011,1), end(BVP))
-        uzimt_M_W_l1 <- window(stats::lag(uzimt_M,-1), start=c(2011,1), end(BVP))
-        TUI_M_W <- window(TUI_M, start=c(2011,1), end(BVP))
-        TUI_M_W_l1 <- window(stats::lag(TUI_M,-1), start=c(2011,1), end(BVP))
-        TUI_M_W_l2 <- window(stats::lag(TUI_M,-2), start=c(2011,1), end(BVP))
-        TUI_M_W_l3 <- window(stats::lag(TUI_M,-3), start=c(2011,1), end(BVP))
-        TUI_M_W_l4 <- window(stats::lag(TUI_M,-4), start=c(2011,1), end(BVP))
-}
+M_W <- window(TM_M, start=c(2011,1),end(BVP))
+Pasl_M_W <- window(Pasl_M,  start=c(2011,1), end(BVP))
+PVM_M_W_l1 <- window(stats::lag(PVM_M,-1), start=c(2011,1),end(BVP))
+S1_W <- window(S1, start=c(2011,1), end(BVP))
+TUI_M_W_l1 <- window(stats::lag(TUI_M,-1), start=c(2011,1), end(BVP))
+
 mod_M <- lm(M_W ~ Pasl_M_W + PVM_M_W_l1 + S1_W + TUI_M_W_l1)
 summary(mod_M)
 e_M <- resid(mod_M)
@@ -707,103 +597,40 @@ Mf=ts(Mf, start=2011, frequency=4)
 plot(M_W, lwd=2)
 lines(Mf, col="blue")
 
-## N -  ADMINISTRACINĖ IR APTARNAVIMO VEIKLA
+#### N -  ADMINISTRACINĖ IR APTARNAVIMO VEIKLA ####
 
+N_W <- window(TM_N, start=c(2011,1),end(BVP))
+Pasl_N_W <- window(Pasl_N,  start=c(2011,1), end(BVP))
+im_sk_N_W <- window(im_sk_N, start=c(2011,1), end(BVP))
+DS_N_W <- window(DS_N, start=c(2011,1),end(BVP))
 
-{       P_W <- window(TM_P, start=c(2011,1),end(BVP))
-        P_W_l1 <- window(stats::lag(TM_P,-1), start=c(2011,1),end(BVP))
-        P_W_l2 <- window(stats::lag(TM_P,-2), start=c(2011,1),end(BVP))
-        P_W_l3 <- window(stats::lag(TM_P,-3), start=c(2011,1),end(BVP))
-        P_W_l4 <- window(stats::lag(TM_P,-4), start=c(2011,1),end(BVP))
-        DS_P_W <- window(DS_P, start=c(2011,1),end(BVP))
-        DS_P_W_l2 <- window(stats::lag(DS_P,-2), start=c(2011,1),end(BVP))
-        DS_P_W_l1 <- window(stats::lag(DS_P,-1), start=c(2011,1),end(BVP))
-        PVM_P_W <- window(PVM_P, start=c(2011,1),end(BVP))
-        PVM_P_W_l1 <- window(stats::lag(PVM_P,-1), start=c(2011,1),end(BVP))
-        PVM_P_W_l2 <- window(stats::lag(PVM_P,-2), start=c(2011,1),end(BVP))
-        PVM_P_W_l3 <- window(stats::lag(PVM_P,-3), start=c(2011,1),end(BVP))
-        PVM_P_W_l4 <- window(stats::lag(PVM_P,-4), start=c(2011,1),end(BVP))
-        DU_P_W <- window(DU_P, start=c(2011,1),end(BVP))
-        DU_P_W_l1 <- window(stats::lag(DU_P,-1), start=c(2011,1),end(BVP))
-        S3_W <- window(S3, start=c(2011,1),end(BVP))
-        S2_W <- window(S2, start=c(2011,1), end(BVP))
-        S1_W <- window(S1, start=c(2011,1), end(BVP))
-        S4_W <- window(S4, start=c(2011,1), end(BVP))
-        im_sk_P_W <- window(im_sk_P, start=c(2011,1), end(BVP))
-        im_sk_P_W_l1 <- window(stats::lag(im_sk_P,-1), start=c(2011,1), end(BVP))
-        mat_inv_P_W <-  window(mat_inv_P, start=c(2011,1), end(BVP))
-        mat_inv_P_W_l1 <- window(stats::lag(mat_inv_P,-1), start=c(2011,1), end(BVP))
-        mat_inv_P_W_l2 <- window(stats::lag(mat_inv_P,-2), start=c(2011,1), end(BVP))
-        mat_inv_P_W_l3 <- window(stats::lag(mat_inv_P,-3), start=c(2011,1), end(BVP))
-        mat_inv_P_W_l4 <- window(stats::lag(mat_inv_P,-4), start=c(2011,1), end(BVP))
-        Pasl_P_W <- window(Pasl_P,  start=c(2011,1), end(BVP))
-        Pasl_P_W_l1 <- window(stats::lag(Pasl_P,-1), start=c(2011,1),end(BVP))
-        salyg_d_sk_P_W <- window(salyg_d_sk_P, start=c(2011,1), end(BVP))
-        salyg_d_sk_P_W_l1 <- window(stats::lag(salyg_d_sk_P,-1), start=c(2011,1), end(BVP))
-        uzimt_P_W <- window(uzimt_P, start=c(2011,1), end(BVP))
-        uzimt_P_W_l1 <- window(stats::lag(uzimt_P,-1), start=c(2011,1), end(BVP))
-        TUI_P_W <- window(TUI_P, start=c(2011,1), end(BVP))
-        TUI_P_W_l1 <- window(stats::lag(TUI_P,-1), start=c(2011,1), end(BVP))
-        TUI_P_W_l2 <- window(stats::lag(TUI_P,-2), start=c(2011,1), end(BVP))
-        TUI_P_W_l3 <- window(stats::lag(TUI_P,-3), start=c(2011,1), end(BVP))
-        TUI_P_W_l4 <- window(stats::lag(TUI_P,-4), start=c(2011,1), end(BVP))
-}
+mod_N <- lm(N_W ~ Pasl_N_W + im_sk_N_W + DS_N_W)
+summary(mod_N)
 
-mod_P <- lm(P_W ~ Pasl_P_W + uzimt_P_W  + S3_W + im_sk_P_W)
-summary(mod_P)
+e_N <- resid(mod_N)
+shapiro.test(e_N)
+MAPE_N <- mean(abs(e_N)/N_W*100)
+MAPE_N
+vif(mod_N)
+dwtest(mod_N)
 
-e_P <- resid(mod_P)
-shapiro.test(e_P)
-MAPE_P <- mean(abs(e_P)/P_W*100)
-MAPE_P
-vif(mod_P)
-dwtest(mod_P)
-
-Nf <- predict(mod_P, list(
-        Pasl_P_W<- c(window(Pasl_P, start=c(2011,1),end=c(now))), 
-        uzimt_P_W<- c(window(uzimt_P, start=c(2011,1),end=c(now))),
-        im_sk_P_W<- c(window(im_sk_P, start=c(2011,1),end=c(now))),
-        S3_W<- c(window(S3, start=c(2011,1),end=c(now))), 
+Nf <- predict(mod_N, list(
+        Pasl_N_W<- c(window(Pasl_N, start=c(2011,1),end=c(now))), 
+        DS_N_W<- c(window(DS_N, start=c(2011,1),end=c(now))),
+        im_sk_N_W<- c(window(im_sk_N, start=c(2011,1),end=c(now))),
         interval = "confidence"))
 
 
 Nf=ts(Nf, start=2011, frequency=4)
-plot(TM_P, lwd=2)
+plot(N_W, lwd=2)
 lines(Nf, col="blue")
 
-## O - VIEŠASIS VALDYMAS IR GYNYBA; PRIVALOMASIS SOCIALINIS DRAUDIMAS
-{       O_W <- window(TM_O, start=c(2011,1),end(BVP))
-        O_W_l1 <- window(stats::lag(TM_O,-1), start=c(2011,1),end(BVP))
-        O_W_l2 <- window(stats::lag(TM_O,-2), start=c(2011,1),end(BVP))
-        O_W_l3 <- window(stats::lag(TM_O,-3), start=c(2011,1),end(BVP))
-        O_W_l4 <- window(stats::lag(TM_O,-4), start=c(2011,1),end(BVP))
-        DS_O_W <- window(DS_O, start=c(2011,1),end(BVP))
-        DS_O_W_l2 <- window(stats::lag(DS_O,-2), start=c(2011,1),end(BVP))
-        DS_O_W_l1 <- window(stats::lag(DS_O,-1), start=c(2011,1),end(BVP))
-        PVM_O_W <- window(PVM_O, start=c(2011,1),end(BVP))
-        PVM_O_W_l1 <- window(stats::lag(PVM_O,-1), start=c(2011,1),end(BVP))
-        PVM_O_W_l2 <- window(stats::lag(PVM_O,-2), start=c(2011,1),end(BVP))
-        PVM_O_W_l3 <- window(stats::lag(PVM_O,-3), start=c(2011,1),end(BVP))
-        PVM_O_W_l4 <- window(stats::lag(PVM_O,-4), start=c(2011,1),end(BVP))
-        DU_O_W <- window(DU_O, start=c(2011,1),end(BVP))
-        DU_O_W_l1 <- window(stats::lag(DU_O,-1), start=c(2011,1),end(BVP))
-        S3_W <- window(S3, start=c(2011,1),end(BVP))
-        S2_W <- window(S2, start=c(2011,1), end(BVP))
-        S1_W <- window(S1, start=c(2011,1), end(BVP))
-        S4_W <- window(S4, start=c(2011,1), end(BVP))
-        mat_inv_O_W <-  window(mat_inv_O, start=c(2011,1), end(BVP))
-        mat_inv_O_W_l1 <- window(stats::lag(mat_inv_O,-1), start=c(2011,1), end(BVP))
-        mat_inv_O_W_l2 <- window(stats::lag(mat_inv_O,-2), start=c(2011,1), end(BVP))
-        mat_inv_O_W_l3 <- window(stats::lag(mat_inv_O,-3), start=c(2011,1), end(BVP))
-        mat_inv_O_W_l4 <- window(stats::lag(mat_inv_O,-4), start=c(2011,1), end(BVP))
-        salyg_d_sk_O_W <- window(salyg_d_sk_O, start=c(2011,1), end(BVP))
-        salyg_d_sk_O_W_l1 <- window(stats::lag(salyg_d_sk_O,-1), start=c(2011,1), end(BVP))
-        uzimt_O_W <- window(uzimt_O, start=c(2011,1), end(BVP))
-        uzimt_O_W_l1 <- window(stats::lag(uzimt_O,-1), start=c(2011,1), end(BVP))
-        OTR_W <- window(OTR, start=c(2011,1), end(BVP))
-        OTE_W_l1 <- window(stats::lag(OTE,-1), start=c(2011,1), end(BVP))
-        OTE_W <- window(OTE, start=c(2011,1), end(BVP))
-}
+#### O - VIEŠASIS VALDYMAS IR GYNYBA; PRIVALOMASIS SOCIALINIS DRAUDIMAS ####
+
+O_W <- window(TM_O, start=c(2011,1),end(BVP))
+DU_O_W <- window(DU_O, start=c(2011,1),end(BVP))
+O_W_l4 <- window(stats::lag(TM_O,-4), start=c(2011,1),end(BVP))
+OTE_W <- window(OTE, start=c(2011,1), end(BVP))
 
 mod_O <- lm(O_W ~ DU_O_W + O_W_l4 + OTE_W)
 
@@ -828,46 +655,14 @@ Of=ts(Of, start=2011, frequency=4)
 plot(O_W, lwd=2)
 lines(Of, col="blue")
 
-## P - ŠVIETIMAS
- 
-{       P_W <- window(TM_P, start=c(2011,1),end(BVP))
-        P_W_l1 <- window(stats::lag(TM_P,-1), start=c(2011,1),end(BVP))
-        P_W_l2 <- window(stats::lag(TM_P,-2), start=c(2011,1),end(BVP))
-        P_W_l3 <- window(stats::lag(TM_P,-3), start=c(2011,1),end(BVP))
-        P_W_l4 <- window(stats::lag(TM_P,-4), start=c(2011,1),end(BVP))
-        DS_P_W <- window(DS_P, start=c(2011,1),end(BVP))
-        DS_P_W_l2 <- window(stats::lag(DS_P,-2), start=c(2011,1),end(BVP))
-        DS_P_W_l1 <- window(stats::lag(DS_P,-1), start=c(2011,1),end(BVP))
-        PVM_P_W <- window(PVM_P, start=c(2011,1),end(BVP))
-        PVM_P_W_l1 <- window(stats::lag(PVM_P,-1), start=c(2011,1),end(BVP))
-        PVM_P_W_l2 <- window(stats::lag(PVM_P,-2), start=c(2011,1),end(BVP))
-        PVM_P_W_l3 <- window(stats::lag(PVM_P,-3), start=c(2011,1),end(BVP))
-        PVM_P_W_l4 <- window(stats::lag(PVM_P,-4), start=c(2011,1),end(BVP))
-        DU_P_W <- window(DU_P, start=c(2011,1),end(BVP))
-        DU_P_W_l1 <- window(stats::lag(DU_P,-1), start=c(2011,1),end(BVP))
-        S3_W <- window(S3, start=c(2011,1),end(BVP))
-        S2_W <- window(S2, start=c(2011,1), end(BVP))
-        S1_W <- window(S1, start=c(2011,1), end(BVP))
-        S4_W <- window(S4, start=c(2011,1), end(BVP))
-        im_sk_P_W <- window(im_sk_P, start=c(2011,1), end(BVP))
-        im_sk_P_W_l1 <- window(stats::lag(im_sk_P,-1), start=c(2011,1), end(BVP))
-        mat_inv_P_W <-  window(mat_inv_P, start=c(2011,1), end(BVP))
-        mat_inv_P_W_l1 <- window(stats::lag(mat_inv_P,-1), start=c(2011,1), end(BVP))
-        mat_inv_P_W_l2 <- window(stats::lag(mat_inv_P,-2), start=c(2011,1), end(BVP))
-        mat_inv_P_W_l3 <- window(stats::lag(mat_inv_P,-3), start=c(2011,1), end(BVP))
-        mat_inv_P_W_l4 <- window(stats::lag(mat_inv_P,-4), start=c(2011,1), end(BVP))
-        Pasl_P_W <- window(Pasl_P,  start=c(2011,1), end(BVP))
-        Pasl_P_W_l1 <- window(stats::lag(Pasl_P,-1), start=c(2011,1),end(BVP))
-        salyg_d_sk_P_W <- window(salyg_d_sk_P, start=c(2011,1), end(BVP))
-        salyg_d_sk_P_W_l1 <- window(stats::lag(salyg_d_sk_P,-1), start=c(2011,1), end(BVP))
-        uzimt_P_W <- window(uzimt_P, start=c(2011,1), end(BVP))
-        uzimt_P_W_l1 <- window(stats::lag(uzimt_P,-1), start=c(2011,1), end(BVP))
-        TUI_P_W <- window(TUI_P, start=c(2011,1), end(BVP))
-        TUI_P_W_l1 <- window(stats::lag(TUI_P,-1), start=c(2011,1), end(BVP))
-        TUI_P_W_l2 <- window(stats::lag(TUI_P,-2), start=c(2011,1), end(BVP))
-        TUI_P_W_l3 <- window(stats::lag(TUI_P,-3), start=c(2011,1), end(BVP))
-        TUI_P_W_l4 <- window(stats::lag(TUI_P,-4), start=c(2011,1), end(BVP))
-}
+#### P - ŠVIETIMAS ####
+P_W <- window(TM_P, start=c(2011,1),end(BVP))
+DU_P_W <- window(DU_P, start=c(2011,1),end(BVP))
+S3_W <- window(S3, start=c(2011,1),end(BVP))
+S2_W <- window(S2, start=c(2011,1), end(BVP))
+im_sk_P_W <- window(im_sk_P, start=c(2011,1), end(BVP))
+Pasl_P_W <- window(Pasl_P,  start=c(2011,1), end(BVP))
+TUI_P_W_l2 <- window(stats::lag(TUI_P,-2), start=c(2011,1), end(BVP))
 
 mod_P <- lm(P_W ~ DU_P_W + S3_W + S2_W + im_sk_P_W + Pasl_P_W + TUI_P_W_l2) 
 summary(mod_P)
@@ -892,46 +687,11 @@ Pf=ts(Pf, start=2011, frequency=4)
 plot(P_W, lwd=2)
 lines(Pf, col="blue")
 
-## Q - ŽMONIŲ SVEIKATOS PRIEŽIŪRA IR SOCIALINIS DARBAS
-{       Q_W <- window(TM_Q, start=c(2016,1),end(BVP))
-        Q_W_l1 <- window(stats::lag(TM_Q,-1), start=c(2016,1),end(BVP))
-        Q_W_l2 <- window(stats::lag(TM_Q,-2), start=c(2016,1),end(BVP))
-        Q_W_l3 <- window(stats::lag(TM_Q,-3), start=c(2016,1),end(BVP))
-        Q_W_l4 <- window(stats::lag(TM_Q,-4), start=c(2016,1),end(BVP))
-        DS_Q_W <- window(DS_Q, start=c(2016,1),end(BVP))
-        DS_Q_W_l2 <- window(stats::lag(DS_Q,-2), start=c(2016,1),end(BVP))
-        DS_Q_W_l1 <- window(stats::lag(DS_Q,-1), start=c(2016,1),end(BVP))
-        PVM_Q_W <- window(PVM_Q, start=c(2016,1),end(BVP))
-        PVM_Q_W_l1 <- window(stats::lag(PVM_Q,-1), start=c(2016,1),end(BVP))
-        PVM_Q_W_l2 <- window(stats::lag(PVM_Q,-2), start=c(2016,1),end(BVP))
-        PVM_Q_W_l3 <- window(stats::lag(PVM_Q,-3), start=c(2016,1),end(BVP))
-        PVM_Q_W_l4 <- window(stats::lag(PVM_Q,-4), start=c(2016,1),end(BVP))
-        DU_Q_W <- window(DU_Q, start=c(2016,1),end(BVP))
-        DU_Q_W_l1 <- window(stats::lag(DU_Q,-1), start=c(2016,1),end(BVP))
-        S3_W <- window(S3, start=c(2016,1),end(BVP))
-        S2_W <- window(S2, start=c(2016,1), end(BVP))
-        S1_W <- window(S1, start=c(2016,1), end(BVP))
-        S4_W <- window(S4, start=c(2016,1), end(BVP))
-        im_sk_Q_W <- window(im_sk_Q, start=c(2016,1), end(BVP))
-        im_sk_Q_W_l1 <- window(stats::lag(im_sk_Q,-1), start=c(2016,1), end(BVP))
-        mat_inv_Q_W <-  window(mat_inv_Q, start=c(2016,1), end(BVP))
-        mat_inv_Q_W_l1 <- window(stats::lag(mat_inv_Q,-1), start=c(2016,1), end(BVP))
-        mat_inv_Q_W_l2 <- window(stats::lag(mat_inv_Q,-2), start=c(2016,1), end(BVP))
-        mat_inv_Q_W_l3 <- window(stats::lag(mat_inv_Q,-3), start=c(2016,1), end(BVP))
-        mat_inv_Q_W_l4 <- window(stats::lag(mat_inv_Q,-4), start=c(2016,1), end(BVP))
-        Pasl_Q_W <- window(Pasl_Q,  start=c(2016,1), end(BVP))
-        Pasl_Q_W_l1 <- window(stats::lag(Pasl_Q,-1), start=c(2016,1),end(BVP))
-        salyg_d_sk_Q_W <- window(salyg_d_sk_Q, start=c(2016,1), end(BVP))
-        salyg_d_sk_Q_W_l1 <- window(stats::lag(salyg_d_sk_Q,-1), start=c(2016,1), end(BVP))
-        uzimt_Q_W <- window(uzimt_Q, start=c(2016,1), end(BVP))
-        uzimt_Q_W_l1 <- window(stats::lag(uzimt_Q,-1), start=c(2016,1), end(BVP))
-        TUI_Q_W <- window(TUI_Q, start=c(2016,1), end(BVP))
-        TUI_Q_W_l1 <- window(stats::lag(TUI_Q,-1), start=c(2016,1), end(BVP))
-        TUI_Q_W_l2 <- window(stats::lag(TUI_Q,-2), start=c(2016,1), end(BVP))
-        TUI_Q_W_l3 <- window(stats::lag(TUI_Q,-3), start=c(2016,1), end(BVP))
-        TUI_Q_W_l4 <- window(stats::lag(TUI_Q,-4), start=c(2016,1), end(BVP))
-}
-
+#### Q - ŽMONIŲ SVEIKATOS PRIEŽIŪRA IR SOCIALINIS DARBAS ####
+Q_W <- window(TM_Q, start=c(2016,1),end(BVP))
+PVM_Q_W <- window(PVM_Q, start=c(2016,1),end(BVP))
+Q_W_l4 <- window(stats::lag(TM_Q,-4), start=c(2016,1),end(BVP))
+mat_inv_Q_W_l3 <- window(stats::lag(mat_inv_Q,-3), start=c(2016,1), end(BVP))
 
 mod_Q <- lm (Q_W ~ PVM_Q_W + Q_W_l4 + mat_inv_Q_W_l3)
 summary(mod_Q)
@@ -954,45 +714,10 @@ plot(Q_W, lwd=2)
 lines(Qf, col="blue")
 
 ## MENINĖ, PRAMOGINĖ IR POILSIO ORGANIZAVIMO VEIKLA
-
-{       R_W <- window(TM_R, start=c(2014,1),end(BVP))
-        R_W_l1 <- window(stats::lag(TM_R,-1), start=c(2014,1),end(BVP))
-        R_W_l2 <- window(stats::lag(TM_R,-2), start=c(2014,1),end(BVP))
-        R_W_l3 <- window(stats::lag(TM_R,-3), start=c(2014,1),end(BVP))
-        R_W_l4 <- window(stats::lag(TM_R,-4), start=c(2014,1),end(BVP))
-        DS_R_W <- window(DS_R, start=c(2014,1),end(BVP))
-        DS_R_W_l2 <- window(stats::lag(DS_R,-2), start=c(2014,1),end(BVP))
-        DS_R_W_l1 <- window(stats::lag(DS_R,-1), start=c(2014,1),end(BVP))
-        PVM_R_W <- window(PVM_R, start=c(2014,1),end(BVP))
-        PVM_R_W_l1 <- window(stats::lag(PVM_R,-1), start=c(2014,1),end(BVP))
-        PVM_R_W_l2 <- window(stats::lag(PVM_R,-2), start=c(2014,1),end(BVP))
-        PVM_R_W_l3 <- window(stats::lag(PVM_R,-3), start=c(2014,1),end(BVP))
-        PVM_R_W_l4 <- window(stats::lag(PVM_R,-4), start=c(2014,1),end(BVP))
-        DU_R_W <- window(DU_R, start=c(2014,1),end(BVP))
-        DU_R_W_l1 <- window(stats::lag(DU_R,-1), start=c(2014,1),end(BVP))
-        S3_W <- window(S3, start=c(2014,1),end(BVP))
-        S2_W <- window(S2, start=c(2014,1), end(BVP))
-        S1_W <- window(S1, start=c(2014,1), end(BVP))
-        S4_W <- window(S4, start=c(2014,1), end(BVP))
-        im_sk_R_W <- window(im_sk_R, start=c(2014,1), end(BVP))
-        im_sk_R_W_l1 <- window(stats::lag(im_sk_R,-1), start=c(2014,1), end(BVP))
-        mat_inv_R_W <-  window(mat_inv_R, start=c(2014,1), end(BVP))
-        mat_inv_R_W_l1 <- window(stats::lag(mat_inv_R,-1), start=c(2014,1), end(BVP))
-        mat_inv_R_W_l2 <- window(stats::lag(mat_inv_R,-2), start=c(2014,1), end(BVP))
-        mat_inv_R_W_l3 <- window(stats::lag(mat_inv_R,-3), start=c(2014,1), end(BVP))
-        mat_inv_R_W_l4 <- window(stats::lag(mat_inv_R,-4), start=c(2014,1), end(BVP))
-        Pasl_R_W <- window(Pasl_R,  start=c(2014,1), end(BVP))
-        Pasl_R_W_l1 <- window(stats::lag(Pasl_R,-1), start=c(2014,1),end(BVP))
-        salyg_d_sk_R_W <- window(salyg_d_sk_R, start=c(2014,1), end(BVP))
-        salyg_d_sk_R_W_l1 <- window(stats::lag(salyg_d_sk_R,-1), start=c(2014,1), end(BVP))
-        uzimt_R_W <- window(uzimt_R, start=c(2014,1), end(BVP))
-        uzimt_R_W_l1 <- window(stats::lag(uzimt_R,-1), start=c(2014,1), end(BVP))
-        TUI_R_W <- window(TUI_R, start=c(2014,1), end(BVP))
-        TUI_R_W_l1 <- window(stats::lag(TUI_R,-1), start=c(2014,1), end(BVP))
-        TUI_R_W_l2 <- window(stats::lag(TUI_R,-2), start=c(2014,1), end(BVP))
-        TUI_R_W_l3 <- window(stats::lag(TUI_R,-3), start=c(2014,1), end(BVP))
-        TUI_R_W_l4 <- window(stats::lag(TUI_R,-4), start=c(2014,1), end(BVP))
-}
+R_W <- window(TM_R, start=c(2014,1),end(BVP))
+Pasl_R_W <- window(Pasl_R,  start=c(2014,1), end(BVP))
+DU_R_W <- window(DU_R, start=c(2014,1),end(BVP))
+mat_inv_R_W_l2 <- window(stats::lag(mat_inv_R,-2), start=c(2014,1), end(BVP))
 
 mod_R <- lm (R_W ~ Pasl_R_W + DU_R_W + mat_inv_R_W_l2)
 summary(mod_R)
@@ -1013,3 +738,95 @@ Rf <- predict(mod_R, list(
 Rf=ts(Rf, start=2014, frequency=4)
 plot(R_W, lwd=2)
 lines(Rf, col="blue")
+
+#### S - KITA APTARNAVIMO VEIKLA ####
+
+S_W <- window(TM_S, start=c(2014,1),end(BVP))
+S_W_l4 <- window(stats::lag(TM_S,-4), start=c(2014,1),end(BVP))
+DS_S_val_W <- window(DS_S_valand, start=c(2014,1),end(BVP))
+im_sk_S_W <- window(im_sk_S, start=c(2014,1), end(BVP))
+im_sk_S_W_l1 <- window(stats::lag(im_sk_S,-1), start=c(2014,1), end(BVP))
+mat_inv_S_W_l1 <- window(stats::lag(mat_inv_S,-1), start=c(2014,1), end(BVP))
+
+mod_S <- lm(S_W ~ S_W_l4 + DS_S_val_W + im_sk_S_W + im_sk_S_W_l1 + mat_inv_S_W_l1)
+summary(mod_S)
+e_S <- resid(mod_S)
+shapiro.test(e_S)
+MAPE_S <- mean(abs(e_S)/R_W*100)
+MAPE_S
+vif(mod_S)
+dwtest(mod_S)
+
+Sf <- predict(mod_S, list(
+        im_sk_S_W<- c(window(im_sk_S, start=c(2014,1),end=c(now))), 
+        DS_S_val_W<- c(window(DS_S_valand, start=c(2014,1),end=c(now))), 
+        S_W_l4 <- c(window(stats::lag(TM_S,-4), start=c(2014,1),end=c(now))),
+        im_sk_S_W_l1 <- c(window(stats::lag(im_sk_S,-1), start=c(2014,1),end=c(now))),
+        mat_inv_S_W_l1 <- c(window(stats::lag(mat_inv_S,-1), start=c(2014,1),end=c(now))),
+        interval = "confidence"))
+
+Sf=ts(Sf, start=2014, frequency=4)
+plot(S_W, lwd=2)
+lines(Sf, col="blue")
+
+
+#### D21 – Mokesčiai produktams ###
+D21_W <- window(D21, start=c(2011,1),end(BVP))
+PVMviso_W <- window(PVMviso, start=c(2011,1),end(BVP))
+DS_Total_l1 <- window(stats::lag(DS_Total,-1), start=c(2011,1),end(BVP))
+D21_W_l4 <- window(stats::lag(D21,-4), start=c(2011,1),end(BVP))
+S2_W <- window(S2, start=c(2011,1), end(BVP))
+DS_Total_W <- window(DS_Total, start=c(2011,1), end(BVP))
+DU_Total_W <- window(DU_Total, start=c(2011,1), end(BVP))
+
+mod_D21 <- lm(D21_W~PVMviso_W + D21_W_l4)
+summary(mod_D21)
+e_D21 <- resid(mod_D21)
+shapiro.test(e_D21)
+MAPE_D21 <- mean(abs(e_D21)/D21_W*100)
+MAPE_D21
+vif(mod_D21)
+dwtest(mod_D21)
+
+D21f <- predict(mod_D21, list(
+        PVMviso_W<- c(window(PVMviso, start=c(2011,1),end=c(now))), 
+        D21_W_l4 <- c(window(stats::lag(D21,-4), start=c(2011,1),end=c(now))),
+        interval = "confidence"))
+
+D21f <- ts(D21f, start=2011, frequency=4)
+
+graphics.off()
+plot(D21, lwd=2)
+lines(D21f, col="blue")
+
+## D31 Subsidijos produktams
+D31_W <- window(D31, start=c(2011,2),end(BVP))
+
+auto.arima(D31_W)
+mod_D31_ARIMA <- arima(D31_W, order=c(0,0,1), seasonal=c(0,1,0))
+summary(mod_D31_ARIMA)
+coeftest(mod_D31_ARIMA)
+tsdiag(mod_D31_ARIMA)
+D31_ARIMA <- fitted(mod_D31_ARIMA)
+e_D31_ARIMA <- resid(mod_D31_ARIMA)
+D31f <- forecast(mod_D31_ARIMA, h = 1)
+D31_lef <- ts(D31f$mean, start=c(now),frequency = 4)
+D31lef <- ts(c(D31_ARIMA,D31_lef), start(D31_ARIMA), frequency = 4)
+
+graphics.off()
+plot(D31_W, lwd=2)
+lines(D31lef, col="blue")
+
+## REZULTATAS
+
+PV <- Af + Bf + Cf + Df + Ef + Ff + Gf + Hf + If + Jf + Kf + Lf + Mf + Nf + Of + Pf + Qf + Rf + Sf
+PV_W <- window(PV, start=c(2014,1))
+D21_D31_f <- D21f - D31lef
+BVPf <- PV_W +  D21_D31_f
+MAPE_BVP <- mean(abs(BVP_W-BVPf)/BVP_W*100)
+MAPE_BVP
+
+plot(BVP,lwd=2)
+lines(BVPf,col="red")
+
+
